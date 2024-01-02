@@ -213,7 +213,7 @@ class ClientThread(threading.Thread):
                         self.tcpClientSocket.send(response.encode())
 
                 # LEAVING the CHAT ROOM
-                elif message[0] == "LEAVECHATROOM":
+                elif message[0] == "leavechatr":
                     self.leave_chat_room()
 
             except OSError as oErr:
