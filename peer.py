@@ -88,14 +88,14 @@ class PeerServer(threading.Thread):
                         if len(message) == 0:
                             s.close()
                             self.connectedPeers.remove(s)
-                        elif message[0] == "chatroom-join":
+                        elif message[0] == "joinchatr":
                             print(message[1] + " has joined the chatroom.")
                             s.send("welcome".encode())
-                        elif message[0] == "chatroom-leave":
+                        elif message[0] == "leavechatr":
                             print(f"{Fore.RED}{message[1]} " + f"{Fore.RED}has left the chatroom.{Fore.RESET}")
                             s.close()
                             self.connectedPeers.remove(s)
-                        elif message[0] == "chat-message":
+                        elif message[0] == "chatmessage":
                             username = message[1]
                             content = "\n".join(message[2:])
                             print(username + " -> " + f"{Fore.LIGHTBLUE_EX}{content}{Fore.RESET}")
@@ -138,7 +138,7 @@ class PeerClient(threading.Thread):
                     peerPort = int(peer_data[1])
                     sock = socket(AF_INET, SOCK_STREAM)
                     sock.connect((peerHost, peerPort))
-                    message = "chatroom-join\n{}".format(self.username)
+                    message = "joinchatr\n{}".format(self.username)
                     sock.send(message.encode())
                     self.peerServer.connectedPeers.append(sock)
 
@@ -153,9 +153,9 @@ class PeerClient(threading.Thread):
             content = input()
 
             if content == "exit":
-                message = "LEAVECHATROOM\n" + self.username
+                message = "leavechatr\n" + self.username
             else:
-                message = "message\n{}\n{}".format(self.username, content)
+                message = "chatmessage\n{}\n{}".format(self.username, content)
 
             for sock in self.peerServer.connectedPeers:
                 try:
@@ -398,7 +398,7 @@ class peerMain:
                 self.peerClient.start()
                 self.peerClient.join()
 
-            self.tcpClientSocket.send("chatroom-leave".encode())
+            self.tcpClientSocket.send("leavechatr".encode())
         elif response == "No-Room found":
             print("No room found by the name: " + chat_room_name)
 
