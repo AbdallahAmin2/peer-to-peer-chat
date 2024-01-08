@@ -1,7 +1,7 @@
-# Includes database operations
 from pymongo import MongoClient
 
 
+# Includes database operations
 class DB:
 
     # db initializations
@@ -11,7 +11,11 @@ class DB:
 
     # checks if an account with the username exists
     def is_account_exist(self, username):
-        return self.db.accounts.count_documents({'username': username}) > 0
+
+        if self.db.accounts.count_documents({'username': username}) > 0:
+            return True
+        else:
+            return False
 
     # registers a user
     def register(self, username, password):
@@ -27,22 +31,42 @@ class DB:
 
     # checks if an account with the username online
     def is_account_online(self, username):
-        return self.db.online_peers.count_documents({"username": username}) > 0
+        if self.db.online_peers.count_documents({"username": username}) > 0:
+            return True
+        else:
+            return False
 
     # logs in the user
-    def user_login(self, username, ip, port):
+    def user_login(self, username, ip, tcpport , udpport ):
         online_peer = {
             "username": username,
             "ip": ip,
-            "port": port
-        }
-        # self.db.online_peers.insert_one(online_peer)
+            "TCP_Port": tcpport,
+            "UDP_Port": udpport
 
-    # logs out the user
+        }
+        self.db.online_peers.insert_one(online_peer)
+
+    # logs out the user 
     def user_logout(self, username):
-        self.db.online_peers.remove_one({"username": username})
+        self.db.online_peers.delete_one({"username": username})
 
     # retrieves the ip address and the port number of the username
     def get_peer_ip_port(self, username):
         res = self.db.online_peers.find_one({"username": username})
-        return (res["ip"], res["port"])
+        return (res["ip"], res["TCP_Port"])
+
+    def get_peer_ip_udp_port(self, username):
+        res = self.db.online_peers.find_one({"username": username})
+        return (res["ip"], res["UDP_Port"])
+
+    def user_leave_room(self, room_id, username):
+        room_query = {'Room_id': room_id}
+        user_query = {'username': username}
+        update_query = {'$pull': {'users': user_query}}
+
+        self.rooms_collection.update_one(room_query, update_query)
+
+
+
+
